@@ -16,7 +16,12 @@ import androidx.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyEditableDropdownMenu(label: String, items : List<String>, selectedText : String) {
+fun MyEditableDropdownMenu(
+    label: String,
+    items : List<String>,
+    selectedText : String,
+    onItemSelected: (Int) -> Unit
+) {
     var expanded by remember { mutableStateOf(false) }
     var selectedItemText by remember { mutableStateOf(selectedText) }
     ExposedDropdownMenuBox(
@@ -32,23 +37,23 @@ fun MyEditableDropdownMenu(label: String, items : List<String>, selectedText : S
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             colors = ExposedDropdownMenuDefaults.textFieldColors(),
         )
-        // 基于文本字段值的筛选器选项
-        val filteringOptions = items.filter { it.contains(selectedItemText, ignoreCase = true) }
-        if (filteringOptions.isNotEmpty()) {
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-            ) {
-                filteringOptions.forEach { selectionOption ->
-                    DropdownMenuItem(
-                        text = { Text(selectionOption) },
-                        onClick = {
-                            selectedItemText = selectionOption
-                            expanded = false
-                        },
-                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-                    )
-                }
+//        // 基于文本字段值的筛选器选项
+//        val filteringOptions = items.filter { it.contains(selectedItemText, ignoreCase = true) }
+//        if (filteringOptions.isNotEmpty()) {
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            items.forEachIndexed { index, s ->
+                DropdownMenuItem(
+                    text = { Text(s) },
+                    onClick = {
+                        onItemSelected(index)
+                        selectedItemText = s
+                        expanded = false
+                    },
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                )
             }
         }
     }
@@ -58,5 +63,7 @@ fun MyEditableDropdownMenu(label: String, items : List<String>, selectedText : S
 @Composable
 fun Preview(){
     val items = listOf("Option 1", "Option 2", "Option 3", "Option 4", "Option 5")
-    MyEditableDropdownMenu ("预览",items,"Option 1")
+    MyEditableDropdownMenu ("预览",items,"Option 1"){
+
+    }
 }

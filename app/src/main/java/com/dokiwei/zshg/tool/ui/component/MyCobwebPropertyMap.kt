@@ -1,12 +1,20 @@
 package com.dokiwei.zshg.tool.ui.component
 
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -19,7 +27,11 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.text.*
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,36 +46,26 @@ import kotlin.math.sin
  * @author: 三石
  * @date: 2023/3/13 17:30
  *
- * @param modifier 修饰符
  * @param dataList 需要绘制的数据列表
  * @param labelList 数据列表对应的标签
  * @param layerNum 绘制蛛网的层数
- * @param maxData_ 最外层蛛网代表的最大值，为空则取 dataList 中的最大值
+ * @param maxData 最外层蛛网代表的最大值，为空则取 dataList 中的最大值
  */
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun SpiderWebRadarLineDiagram(
     modifier: Modifier,
     dataList: List<Float>,
-    labelList: List<String>,
-    layerNum: Int = 5,
-    maxData_: Float? = null
+    labelList: List<String> = listOf("力量", "体质", "感知", "意志", "敏捷", "技巧"),
+    layerNum: Int = 3,
+    maxData: Float = 1.3f,
+    lineRadius: Float = 0f
 ) {
-    //数据长度和标签长度判断处理，若不相等或为空抛出异常
-    if (dataList.size != labelList.size || dataList.isEmpty()) {
-        throw IllegalArgumentException("dataList.size can not be empty,and it must equals to paramList.size!")
-    }
-    //计算数据长度，用于确定绘制几边形
-    val count = dataList.size
-    //确定最外层代表的数值上限
-    val maxData = maxData_ ?: dataList.max()
-
     //drawText()绘制文本要用到
     val textMeasurer = rememberTextMeasurer()
     //获取协程作用域
     val coroutineScope = rememberCoroutineScope()
     //记录计算的旋转角度
-    var rotation by remember { mutableStateOf(0f) }
+    var rotation by remember { mutableFloatStateOf(-120f) }
     //记录手指每次移动的起始点
     var startPoint by remember { mutableStateOf(Offset.Zero) }
     //记录手指每次移动的终点
@@ -71,13 +73,13 @@ fun SpiderWebRadarLineDiagram(
     //记录Canvas在大小确定时的中心点
     var centerPoint by remember { mutableStateOf(Offset.Zero) }
     //drag最后一次的速度，作为fling开始的速度
-    var flingStartSpeed by remember { mutableStateOf(0f) }
+    var flingStartSpeed by remember { mutableFloatStateOf(0f) }
     //手指松开后的惯性旋转角度
     val flingRotation = remember { Animatable(0f) }
     //定义衰减动画的衰减属性，指数衰减、摩擦力和临界值
     val exponentDecay = exponentialDecay<Float>(0.5f, 1f)
     //记录上一次onDrag的时间，用于计算两次onDrag的间隔时间
-    var lastOnDragTime by remember { mutableStateOf(0L) }
+    var lastOnDragTime by remember { mutableLongStateOf(0L) }
     val mainColor = MaterialTheme.colorScheme.primary
     val labelColor = MaterialTheme.colorScheme.onSurface
 
@@ -99,7 +101,7 @@ fun SpiderWebRadarLineDiagram(
                 coroutineScope.launch {
                     flingRotation.animateDecay(flingStartSpeed, exponentDecay)
                 }
-            }) { change, dragAmount ->
+            }) { _, dragAmount ->
                 endPoint = startPoint + dragAmount
                 //这里Math.atan2函数对正负做了处理，所以不需要分象限处理
                 (atan2(endPoint.y - centerPoint.y, endPoint.x - centerPoint.x) - atan2(
@@ -134,35 +136,32 @@ fun SpiderWebRadarLineDiagram(
         //计算多边形相接圆的半径
         val radius = min(size.height, size.width) * 0.38f
         //计算多边形相邻顶点的圆心角
-        val roteStep = 360f / count
-        //画中心点
-        drawCircle(Color.Black, 0f, center)
+        val roteStep = 360f / 6
         rotate(rotation + flingRotation.value) {
             //画顶点
-            drawSpiderWebPoints(count, roteStep, radius, mainColor)
+            drawSpiderWebPoints(roteStep, radius, mainColor)
             //画蛛网
-            drawSpiderWeb(layerNum, count, roteStep, radius, mainColor)
+            drawSpiderWeb(layerNum, roteStep, radius, mainColor)
             //画data的线
-            drawDataLine(count, roteStep, dataList, radius, maxData, mainColor)
+            drawDataLine(roteStep, dataList, radius, maxData, mainColor,lineRadius)
         }
         //画标签文本
         drawParamLabel(
-            count, roteStep, radius, textMeasurer, labelList, rotation + flingRotation.value,labelColor
+            roteStep, radius, textMeasurer, labelList, rotation + flingRotation.value, labelColor
         )
     }
 }
 
 /**
  * 绘制多边形顶点
- * @param count 边数，也是顶点数
  * @param roteStep 相邻顶点的圆心角
  * @param radius 相接圆半径
  */
 private fun DrawScope.drawSpiderWebPoints(
-    count: Int, roteStep: Float, radius: Float, color: Color
+    roteStep: Float, radius: Float, color: Color
 ) {
     val pointsList = mutableListOf<Offset>()
-    (0 until count).forEach {
+    (0 until 6).forEach {
         //计算各个顶点坐标
         val (x, y) = calculateXY(roteStep * it, radius)
         pointsList.add(Offset(x, y))
@@ -179,34 +178,32 @@ private fun DrawScope.drawSpiderWebPoints(
 /**
  * 绘制蛛网
  *
- * @param count 顶点数
  * @param roteStep 相邻顶点与中心点构成的角度
  * @param radius 最外层顶点所在圆的半径
  * @param layerNum 总层数
  */
 private fun DrawScope.drawSpiderWeb(
-    layerNum: Int, count: Int, roteStep: Float, radius: Float, color: Color
+    layerNum: Int, roteStep: Float, radius: Float, color: Color
 ) {
     (1..layerNum).forEach {
         //画每一层网络
-        drawOneLayerCobweb(count, roteStep, radius, it, layerNum, color)
+        drawOneLayerCobweb(roteStep, radius, it, layerNum, color)
     }
 }
 
 /**
  * 绘制蛛网的每一层（多边形）
  *
- * @param count 顶点数
  * @param roteStep 相邻顶点与中心点构成的角度
  * @param radius 最外层顶点所在圆的半径
  * @param currentLayer 当前层数
  * @param layerNum 总层数
  */
 private fun DrawScope.drawOneLayerCobweb(
-    count: Int, roteStep: Float, radius: Float, currentLayer: Int, layerNum: Int, color: Color
+    roteStep: Float, radius: Float, currentLayer: Int, layerNum: Int, color: Color
 ) {
     val path = Path()
-    (0 until count).forEach {
+    (0 until 6).forEach {
         //计算各个顶点坐标
         val (x, y) = calculateXY(roteStep * it, radius * currentLayer / layerNum)
         //是最外层时，画顶点与圆心的连线
@@ -220,7 +217,7 @@ private fun DrawScope.drawOneLayerCobweb(
         } else {
             path.lineTo(x, y)
         }
-        if (it == count - 1) {
+        if (it == 5) {
             path.close()
         }
     }
@@ -231,27 +228,26 @@ private fun DrawScope.drawOneLayerCobweb(
 /**
  * 绘制数据的线
  *
- * @param count 顶点数，即dataList的size
  * @param roteStep 相邻顶点与中心点构成的角度
  * @param dataList 需要绘制的数据列表
  * @param radius 最大圆半径
- * @param maxData_ 数据范围的最大值，即最外层蛛网代表的值
+ * @param maxData 数据范围的最大值，即最外层蛛网代表的值
  */
 private fun DrawScope.drawDataLine(
-    count: Int, roteStep: Float, dataList: List<Float>, radius: Float, maxData_: Float, color : Color
+    roteStep: Float, dataList: List<Float>, radius: Float, maxData: Float, color: Color, lineRadius:Float
 ) {
     val dataPath = Path()
-    (0 until count).forEach {
-        val (x, y) = calculateXY(roteStep * it, dataList[it] * radius / maxData_)
+    (0 until 6).forEach {
+        val (x, y) = calculateXY(roteStep * it, dataList[it] * radius / maxData)
         //画数据的各个点
-        drawCircle(color, 0f, Offset(x, y))
+        drawCircle(color, lineRadius, Offset(x, y))
 
         if (it == 0) {
             dataPath.moveTo(x, y)
         } else {
             dataPath.lineTo(x, y)
         }
-        if (it == count - 1) {
+        if (it == 5) {
             dataPath.close()
         }
     }
@@ -262,16 +258,13 @@ private fun DrawScope.drawDataLine(
 /**
  * 绘制标签文本
  *
- * @param count 顶点数
  * @param roteStep 相邻顶点与中心点构成的角度
  * @param radius 当前层顶点所在圆的半径
  * @param textMeasurer TextMeasure
  * @param labelList 存储标签文本的列表
  * @param rotation 当前蛛网图旋转的角度
  */
-@OptIn(ExperimentalTextApi::class)
 private fun DrawScope.drawParamLabel(
-    count: Int,
     roteStep: Float,
     radius: Float,
     textMeasurer: TextMeasurer,
@@ -279,17 +272,15 @@ private fun DrawScope.drawParamLabel(
     rotation: Float,
     color: Color
 ) {
-    (0 until count).forEach {
+    (0 until 6).forEach {
         //计算文本需要绘制的坐标
         val (x, y) = calculateXYByRadian(
             Math.toRadians(roteStep * it.toDouble() + rotation.toDouble()), radius * 1.15f
         )
         //计算要绘制的文本的TextLayoutResult
         val measuredText = textMeasurer.measure(
-            AnnotatedString(labelList[it]),
-            TextStyle(
-                color = color,
-                fontSize = (radius / 20).sp
+            AnnotatedString(labelList[it]), TextStyle(
+                color = color, fontSize = (radius / 20).sp
             )
         )
         //绘制文本
@@ -332,8 +323,8 @@ private fun DrawScope.calculateXYByRadian(
 @Composable
 fun SpiderWebRadarLineDiagramPreview() {
     SpiderWebRadarLineDiagram(
-        modifier = Modifier.size(200.dp,200.dp),
-        dataList = listOf(1.3f, 0.2f, 1.2f, 0.8f, 0.53f, 0.64f),
-        labelList = listOf("感知", "意志", "敏捷", "技巧", "力量","体质")
+        modifier = Modifier.size(200.dp, 200.dp),
+        dataList = listOf(1f, 0.2f, 0.8f, 0.4f, 1.2f, 0.6f),
+        lineRadius = 8f
     )
 }

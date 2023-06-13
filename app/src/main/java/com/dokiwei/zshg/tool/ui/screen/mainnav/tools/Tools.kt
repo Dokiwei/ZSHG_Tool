@@ -1,6 +1,5 @@
-package com.dokiwei.zshg.tool.ui.screen
+package com.dokiwei.zshg.tool.ui.screen.mainnav.tools
 
-import android.content.Context
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,19 +18,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.dokiwei.zshg.tool.data.MyToolsItem
+import com.dokiwei.zshg.tool.data.MyRoute
 import com.dokiwei.zshg.tool.ui.component.MyCenterAlignedTopAppBar
-import java.io.BufferedWriter
-import java.io.IOException
-import java.io.OutputStreamWriter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ToolsScreen(navController: NavHostController) {
-    val context = LocalContext.current
     val items = listOf(
-        MyToolsItem.PotentialCalculation,
-        MyToolsItem.Heirloom
+        MyRoute.ToolRoute.POTENTIAL_CALCULATION,
+        MyRoute.ToolRoute.HEIRLOOM
     )
     Box(
         Modifier
@@ -41,15 +36,12 @@ fun ToolsScreen(navController: NavHostController) {
             modifier = Modifier
                 .fillMaxWidth()
         ) {
-            MyCenterAlignedTopAppBar(MyToolsItem.Tool.title)
+            MyCenterAlignedTopAppBar(MyRoute.ToolRoute.TOOL)
             items.forEach { item ->
                 Card(
                     onClick = {
-                        if (MyToolsItem.PotentialCalculation.title == item.title)
-                            navController.navigate(MyToolsItem.PotentialCalculation.title)
-                        else
-                            navController.navigate(MyToolsItem.Heirloom.title)
-                        try {
+                        navController.navigate(item)
+                        /*try {
                             val output = context.openFileOutput("a.txt", Context.MODE_PRIVATE)
                             val writer = BufferedWriter(OutputStreamWriter(output))
                             writer.use {
@@ -57,7 +49,7 @@ fun ToolsScreen(navController: NavHostController) {
                             }
                         } catch (e: IOException) {
                             e.printStackTrace()
-                        }
+                        }*/
                     },
                     Modifier
                         .size(width = 180.dp, height = 100.dp)
@@ -66,7 +58,7 @@ fun ToolsScreen(navController: NavHostController) {
                 ) {
                     Box(Modifier.fillMaxSize()) {
                         Text(
-                            item.title,
+                            item,
                             Modifier.align(Alignment.Center),
                             fontSize = 15.sp
                         )
@@ -78,9 +70,10 @@ fun ToolsScreen(navController: NavHostController) {
 
 
 }
+
 @Preview(showBackground = true)
 @Composable
-fun PreviewToolScreen(){
+fun PreviewToolScreen() {
     val navController = rememberNavController()
     ToolsScreen(navController)
 }
