@@ -12,12 +12,12 @@ class LaunchHomeViewModel : ViewModel() {
         _mainBottomBarSelectedIndex.intValue = index
     }
 
-    private val _navBottomBar = MutableStateFlow(true)
+    private val _navBottomBar = MutableStateFlow(false)
     val navBottomBar = _navBottomBar
     fun changeBottomBar(route: String) {
         _navBottomBar.value = when (route) {
-            MyRoute.Home.route -> true // 在此屏幕上，底部栏应显示
-            MyRoute.Information.route -> true // 这里也是
+            MyRoute.MainRoute.TOOL_HOME -> true // 在此屏幕上，底部栏应显示
+            MyRoute.MainRoute.INFORMATION_HOME -> true // 这里也是
             else -> false // 在所有其他情况下隐藏底部栏
         }
     }

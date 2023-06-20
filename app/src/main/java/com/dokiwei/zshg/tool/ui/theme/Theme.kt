@@ -16,35 +16,35 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val LightColors = lightColorScheme(
-    primary = md_theme_light_primary,
-    onPrimary = md_theme_light_onPrimary,
-    primaryContainer = md_theme_light_primaryContainer,
-    onPrimaryContainer = md_theme_light_onPrimaryContainer,
-    secondary = md_theme_light_secondary,
-    onSecondary = md_theme_light_onSecondary,
-    secondaryContainer = md_theme_light_secondaryContainer,
-    onSecondaryContainer = md_theme_light_onSecondaryContainer,
-    tertiary = md_theme_light_tertiary,
-    onTertiary = md_theme_light_onTertiary,
-    tertiaryContainer = md_theme_light_tertiaryContainer,
-    onTertiaryContainer = md_theme_light_onTertiaryContainer,
-    error = md_theme_light_error,
-    errorContainer = md_theme_light_errorContainer,
-    onError = md_theme_light_onError,
-    onErrorContainer = md_theme_light_onErrorContainer,
-    background = md_theme_light_background,
-    onBackground = md_theme_light_onBackground,
-    surface = md_theme_light_surface,
-    onSurface = md_theme_light_onSurface,
-    surfaceVariant = md_theme_light_surfaceVariant,
-    onSurfaceVariant = md_theme_light_onSurfaceVariant,
-    outline = md_theme_light_outline,
-    inverseOnSurface = md_theme_light_inverseOnSurface,
-    inverseSurface = md_theme_light_inverseSurface,
-    inversePrimary = md_theme_light_inversePrimary,
-    surfaceTint = md_theme_light_surfaceTint,
-    outlineVariant = md_theme_light_outlineVariant,
-    scrim = md_theme_light_scrim,
+    primary = md_theme_light_primary,//主要
+    onPrimary = md_theme_light_onPrimary,//在主要
+    primaryContainer = md_theme_light_primaryContainer,//主容器
+    onPrimaryContainer = md_theme_light_onPrimaryContainer,//在主容器上
+    secondary = md_theme_light_secondary,//次要
+    onSecondary = md_theme_light_onSecondary,//在次要上
+    secondaryContainer = md_theme_light_secondaryContainer,//次要容器
+    onSecondaryContainer = md_theme_light_onSecondaryContainer,//在次要容器上
+    tertiary = md_theme_light_tertiary,//第三级
+    onTertiary = md_theme_light_onTertiary,//在第三级
+    tertiaryContainer = md_theme_light_tertiaryContainer,//三级容器
+    onTertiaryContainer = md_theme_light_onTertiaryContainer,//在第三级容器上
+    error = md_theme_light_error,//错误
+    errorContainer = md_theme_light_errorContainer,//错误容器
+    onError = md_theme_light_onError,//出错时
+    onErrorContainer = md_theme_light_onErrorContainer,//在错误容器上
+    background = md_theme_light_background,//背景
+    onBackground = md_theme_light_onBackground,//在背景上
+    surface = md_theme_light_surface,//表面
+    onSurface = md_theme_light_onSurface,//在表面上
+    surfaceVariant = md_theme_light_surfaceVariant,//表面变体
+    onSurfaceVariant = md_theme_light_onSurfaceVariant,//表面变体
+    outline = md_theme_light_outline,//大纲
+    inverseOnSurface = md_theme_light_inverseOnSurface,//反曲面
+    inverseSurface = md_theme_light_inverseSurface,//反曲面
+    inversePrimary = md_theme_light_inversePrimary,//逆原色
+    surfaceTint = md_theme_light_surfaceTint,//表面色调
+    outlineVariant = md_theme_light_outlineVariant,//大纲变体
+    scrim = md_theme_light_scrim,//稀松布
 )
 
 

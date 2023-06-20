@@ -26,13 +26,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.navArgument
+import androidx.navigation.navigation
 import com.dokiwei.zshg.tool.data.MyRoute
+import com.dokiwei.zshg.tool.data.Role
 import com.dokiwei.zshg.tool.ui.animation.enterScreenAnim
 import com.dokiwei.zshg.tool.ui.animation.enterSubScreenAnim
 import com.dokiwei.zshg.tool.ui.animation.exitScreenAnim
 import com.dokiwei.zshg.tool.ui.animation.exitSubScreenAnim
+import com.dokiwei.zshg.tool.ui.screen.mainnav.information.occupation.CareerDetailPage
 import com.dokiwei.zshg.tool.ui.screen.mainnav.information.InformationScreen
+import com.dokiwei.zshg.tool.ui.screen.mainnav.information.country.CountryScreen
+import com.dokiwei.zshg.tool.ui.screen.mainnav.information.idol.IdolScreen
+import com.dokiwei.zshg.tool.ui.screen.mainnav.information.lineage.LineageScreen
+import com.dokiwei.zshg.tool.ui.screen.mainnav.information.occupation.OccupationScreen
+import com.dokiwei.zshg.tool.ui.screen.mainnav.information.weapons.WeaponsScreen
 import com.dokiwei.zshg.tool.ui.screen.mainnav.tools.ToolsScreen
 import com.dokiwei.zshg.tool.ui.screen.mainnav.tools.heirloom.HeirloomScreen
 import com.dokiwei.zshg.tool.ui.screen.mainnav.tools.potential.PotentialCalculationScreen
@@ -40,6 +50,7 @@ import com.dokiwei.zshg.tool.ui.screen.start.StartScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.google.gson.Gson
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
@@ -80,43 +91,108 @@ fun MainNavHost(innerPadding: PaddingValues, navController: NavHostController) {
         ) {
             StartScreen(navController)
         }
-        composable(//工具页 selectedItem==0
-            MyRoute.Home.route,
-            enterTransition = enterScreenAnim(),
-            exitTransition = exitScreenAnim(),
-            popEnterTransition = enterScreenAnim(),
-            popExitTransition = exitScreenAnim()
-        ) {
-            ToolsScreen(navController)
-        }
-        composable(//信息页 selectedItem==1
-            MyRoute.Information.route,
-            enterTransition = enterScreenAnim(),
-            exitTransition = exitScreenAnim(),
-            popEnterTransition = enterScreenAnim(),
-            popExitTransition = exitScreenAnim()
-        ) {
-            InformationScreen()
-        }
-        composable(//二级页面 工具/潜力计算页面
-            MyRoute.ToolRoute.POTENTIAL_CALCULATION,
-            enterTransition = enterSubScreenAnim(),
-            exitTransition = exitSubScreenAnim(),
-            popEnterTransition = enterScreenAnim(),
-            popExitTransition = exitScreenAnim()
-        ) {
-            PotentialCalculationScreen {
-                navController.navigate(MyRoute.Home.route)
+        navigation(startDestination = MyRoute.MainRoute.TOOL_HOME, route = MyRoute.Home.route) {
+            composable(//工具页 selectedItem==0
+                MyRoute.MainRoute.TOOL_HOME,
+                enterTransition = enterScreenAnim(),
+                exitTransition = exitScreenAnim(),
+                popEnterTransition = enterScreenAnim(),
+                popExitTransition = exitScreenAnim()
+            ) {
+                ToolsScreen(navController)
+            }
+            composable(//二级页面 工具/潜力计算页面
+                MyRoute.ToolRoute.POTENTIAL_CALCULATION,
+                enterTransition = enterSubScreenAnim(),
+                exitTransition = exitSubScreenAnim(),
+                popEnterTransition = enterScreenAnim(),
+                popExitTransition = exitScreenAnim()
+            ) {
+                PotentialCalculationScreen {
+                    navController.navigate(MyRoute.Home.route)
+                }
+            }
+            composable(//二级页面 工具/传家宝页面
+                MyRoute.ToolRoute.HEIRLOOM,
+                enterTransition = enterSubScreenAnim(),
+                exitTransition = exitSubScreenAnim(),
+                popEnterTransition = enterScreenAnim(),
+                popExitTransition = exitScreenAnim()
+            ) {
+                HeirloomScreen()
             }
         }
-        composable(//二级页面 工具/传家宝页面
-            MyRoute.ToolRoute.HEIRLOOM,
+        navigation(
+            startDestination = MyRoute.MainRoute.INFORMATION_HOME,
+            route = MyRoute.Information.route
+        ) {
+            composable(//信息页 selectedItem==1
+                MyRoute.MainRoute.INFORMATION_HOME,
+                enterTransition = enterScreenAnim(),
+                exitTransition = exitScreenAnim(),
+                popEnterTransition = enterScreenAnim(),
+                popExitTransition = exitScreenAnim()
+            ) {
+                InformationScreen(navController)
+            }
+            composable(//二级页面 攻略/武器
+                MyRoute.InformationRoute.WEAPONS,
+                enterTransition = enterSubScreenAnim(),
+                exitTransition = exitSubScreenAnim(),
+                popEnterTransition = enterScreenAnim(),
+                popExitTransition = exitScreenAnim()
+            ) {
+                WeaponsScreen()
+            }
+            composable(//二级页面 攻略/职业
+                MyRoute.InformationRoute.OCCUPATION,
+                enterTransition = enterSubScreenAnim(),
+                exitTransition = exitSubScreenAnim(),
+                popEnterTransition = enterScreenAnim(),
+                popExitTransition = exitScreenAnim()
+            ) {
+                OccupationScreen(navController) { navController.navigate(MyRoute.Information.route) }
+            }
+            composable(//二级页面 攻略/血统
+                MyRoute.InformationRoute.LINEAGE,
+                enterTransition = enterSubScreenAnim(),
+                exitTransition = exitSubScreenAnim(),
+                popEnterTransition = enterScreenAnim(),
+                popExitTransition = exitScreenAnim()
+            ) {
+                LineageScreen()
+            }
+            composable(//二级页面 攻略/国家
+                MyRoute.InformationRoute.COUNTRY,
+                enterTransition = enterSubScreenAnim(),
+                exitTransition = exitSubScreenAnim(),
+                popEnterTransition = enterScreenAnim(),
+                popExitTransition = exitScreenAnim()
+            ) {
+                CountryScreen()
+            }
+            composable(//二级页面 攻略/神像
+                MyRoute.InformationRoute.IDOL,
+                enterTransition = enterSubScreenAnim(),
+                exitTransition = exitSubScreenAnim(),
+                popEnterTransition = enterScreenAnim(),
+                popExitTransition = exitScreenAnim()
+            ) {
+                IdolScreen()
+            }
+        }
+        composable(//三级页面 详情页
+            "详细页/{role}",
             enterTransition = enterSubScreenAnim(),
             exitTransition = exitSubScreenAnim(),
             popEnterTransition = enterScreenAnim(),
-            popExitTransition = exitScreenAnim()
+            popExitTransition = exitScreenAnim(),
+            arguments = listOf(navArgument("role") { type = NavType.StringType })
         ) {
-            HeirloomScreen()
+            it.arguments?.getString("role")?.let { it1 ->
+                val role = Gson().fromJson(it1, Role::class.java)
+                CareerDetailPage(role = role){navController.navigate(MyRoute.InformationRoute.OCCUPATION)}
+            }
         }
     }
 }
@@ -158,11 +234,11 @@ fun MyNavigationBottomBar(
     navController.addOnDestinationChangedListener { _, destination, _ ->
         MyRoute.MainRoute.apply {
             when (destination.route) {
-                HOME -> {
+                TOOL_HOME -> {
                     viewModel.changeMainBottomBarSelectedIndex(0)
                 }
 
-                INFORMATION -> {
+                INFORMATION_HOME -> {
                     viewModel.changeMainBottomBarSelectedIndex(1)
                 }
             }
@@ -195,7 +271,7 @@ fun MyNavigationBottomBar(
                         // 弹出到图表的起始目的地
                         // 避免建立大量目标
                         // 在用户选择项目时的后退堆栈上
-                        popUpTo(MyRoute.Home.route) {
+                        popUpTo(MyRoute.MainRoute.TOOL_HOME) {
                             saveState = true
                         }
                         // 避免在以下情况下使用同一目标的多个副本
